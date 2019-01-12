@@ -45,7 +45,8 @@ public class MazeView extends View {
     protected void onDraw(Canvas canvas) {
         if (mMaze != null) {
             int measuredWidth = getMeasuredWidth();
-            int width = measuredWidth / mMaze.length;
+            int measuredHeight = getMeasuredHeight();
+            int width = Math.min(measuredWidth, measuredHeight) / mMaze.length;
             for (int i = 0; i < mMaze.length; i++) {
                 for (int j = 0; j < mMaze[i].length; j++) {
                     for (int k = 0; k < 4; k++) {
