@@ -3,6 +3,7 @@ package com.young.maze.ui.widget;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -13,7 +14,9 @@ public class MazeView extends View {
     private static final String TAG = "MazeView";
     private byte[][] mMaze;
     private Paint mPaint;
-    private int mStrokeWidth = 20;
+    private Paint mPathPaint;
+    private int mStrokeWidth;
+    private long[] mPath;
 
     public MazeView(Context context) {
         super(context);
@@ -35,6 +38,10 @@ public class MazeView extends View {
         mPaint.setColor(0xFF000000);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setStrokeWidth(mStrokeWidth);
+        mPathPaint = new Paint();
+        mPathPaint.setStyle(Paint.Style.STROKE);
+        mPathPaint.setColor(0xFFFF0000);
+        mPathPaint.setStrokeWidth(2);
     }
 
     @Override
@@ -50,9 +57,10 @@ public class MazeView extends View {
             if (mazeWidth > 0 && mazeHeight > 0) {
                 int measuredWidth = getMeasuredWidth();
                 int measuredHeight = getMeasuredHeight();
-                float width = Math.min((measuredWidth - mStrokeWidth) * 1.0f / mazeWidth, (measuredHeight - mStrokeWidth) * 1.0f / mazeHeight);
+                float width = Math.min((measuredWidth - 20) * 1.0f / mazeWidth, (measuredHeight - 20) * 1.0f / mazeHeight);
                 mStrokeWidth = (int) Math.ceil(width / 10);
                 mPaint.setStrokeWidth(mStrokeWidth);
+                width = Math.min((measuredWidth - mStrokeWidth) * 1.0f / mazeWidth, (measuredHeight - mStrokeWidth) * 1.0f / mazeHeight);
                 float offsetWidth = (measuredWidth - width * 1.0f * mazeWidth) / 2;
                 float offsetHeight = (measuredHeight - width * 1.0f * mazeHeight) / 2;
                 for (int i = 0; i < mazeWidth; i++) {
@@ -74,12 +82,32 @@ public class MazeView extends View {
                         }
                     }
                 }
+                if (mPath != null) {
+                    Path path1 = new Path();
+                    for (int i = 0; i < mPath.length; i++) {
+                        long path = mPath[i];
+                        int x = (int) (path >> 32);
+                        int y = (int) path;
+                        if (i == 0) {
+                            path1.moveTo((x + 0.5F) * width + offsetWidth, (y + 0.5F) * width + offsetHeight);
+                        } else {
+                            path1.lineTo((x + 0.5F) * width + offsetWidth, (y + 0.5F) * width + offsetHeight);
+                        }
+                    }
+                    canvas.drawPath(path1, mPathPaint);
+                }
             }
         }
     }
 
     public void setMaze(byte[][] maze) {
         mMaze = maze;
+        mPath = null;
+        invalidate();
+    }
+
+    public void setPath(long[] path) {
+        mPath = path;
         invalidate();
     }
 }
